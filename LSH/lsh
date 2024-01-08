@@ -1,0 +1,76 @@
+#!/bin/bash
+for i in "$@"
+do
+    [[ "$skip" == 1 ]] && {
+        skip=0
+        args+=("$i")
+        continue
+    }
+
+    [[ "$i" == "-a" ]] || [[ "$i" == "--all" ]] || [[ "$i" == "-A" ]] || [[ "$i" == "--almost-all" ]] && {
+        ls "$@"
+        exit 0
+    }
+
+    [[ "$i" == "-e" ]] || [[ "$i" == "--nohidden" ]] && {
+        args=()
+        for j in "$@"
+        do
+            [[ "$j" == "-e" ]] || [[ "$j" == "--nohidden" ]] && args+=("$j")
+        done
+        ls "${args[@]}"
+        exit 0
+    }
+
+    [[ ! "$i" =~ -.* ]]&&{
+        [[ -d "$i" ]] && {
+            grep "^$(basename "$i")$" "$(dirname "$i")/../.hidden" &>/dev/null || dirs+=("$i")
+            continue
+        } || {
+            grep "^$(basename "$i")$" "$(dirname "$i")/.hidden" &>/dev/null || files+=("$i")
+            continue
+        }
+
+    }||{
+        [[ $i == "--recursive" ]] || [[ $i == "-R" ]] && {
+            recursive=1
+            continue
+        }
+
+        [[ $i == "--block-size" ]] || [[ $i == "--format" ]] || [[ $i == "--hide" ]] || [[ $i == "--indicator-style" ]] || [[ $i == "-I" ]] || [[ $i == "--ignore" ]] || [[ $i == "--quoting-style" ]] || [[ $i == "--sort" ]] || [[ $i == "--time" ]] || [[ $i == "--time-style" ]] || [[ $i == "-T" ]] || [[ $i == "--tabsize" ]] || [[ $i == "-w" ]] || [[ $i == "--width" ]] && skip=1
+    }
+    args+=("$i")
+done
+
+[[ ${#dirs[@]} == 0 ]] && [[ ${#files[@]} == 0 ]] && dirs+=(".")
+
+[[ "$recursive" == 1 ]] && {
+    for i in "${dirs[@]}"
+    do
+        while read j
+        do
+            grep "^$(basename "$j")$" "$(dirname "$j")/../.hidden" &>/dev/null || dirs+=("$j")
+        done <<< $(find "$i" -type d | tail -n +2)
+    done
+}
+
+
+[[ "${#files[@]}" -ge 1 ]] && ls "$args" "${files[@]}"
+
+[[ "${#files[@]}" -ge 1 ]] || [[ "${#dirs[@]}" -ge 2 ]] && isShowDirname=1
+
+
+for i in "${dirs[@]}"
+do
+    [[ "$isShowDirname" == 1 ]] && echo -e "\\n$i:"
+    hides=()
+    final=()
+    [[ -f "$i/.hidden" ]] && {
+        while read j
+        do
+            hides+=("--hide=$j")
+        done < "$i/.hidden"
+    }
+    final=("${args[@]}" "${hides[@]}" "$i")
+    ls "${final[@]}"
+done

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Service
+Actions=hide_unhide;
+MimeType=all/all;
+
+[Desktop Action hide_unhide]
+Name=Hide/Unhide
+Exec=hider "%f"

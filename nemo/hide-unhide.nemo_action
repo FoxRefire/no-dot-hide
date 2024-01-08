@@ -1,0 +1,10 @@
+[Nemo Action]
+Name=Hide/Unhide
+Comment=Hide/Unhide
+
+Exec=hider "%F"
+
+Selection=S
+
+Extensions=any;
+

@@ -1,0 +1,13 @@
+[Desktop Entry]
+
+Type=Action
+Name=Hide/Unhide
+Profiles=hide-unhide;
+
+
+[X-Action-Profile hide-unhide]
+MimeTypes=all/all
+Exec=hider %f
+Name=Default profile
+SelectionCount==1
+
